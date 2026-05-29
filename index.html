@@ -24,15 +24,6 @@
   .h2-disp { font-family:'Fraunces',serif; font-weight:500; line-height:1.08; }
   .h2-ital { font-family:'Fraunces',serif; font-weight:300; font-style:italic; line-height:1.08; letter-spacing:-.01em; }
   .wordmark { font-family:'Fraunces',serif; font-weight:300; font-style:italic; line-height:.98; }
-  .sentier-track { will-change: transform; }
-  .marker-fixed { will-change: transform; }
-  .sun-disc { will-change: transform; }
-  body.no-scroll { overflow: hidden; }
-  /* Reduced motion fallbacks pour les gestes (déclenchés one-shot à l'apparition, pas scrubbés) */
-  @media (prefers-reduced-motion: reduce) {
-    .sentier-track { transform: translateX(0) !important; }
-    .sun-disc { transform: none !important; }
-  }
   .jalon-line {
     position:absolute; left:1.35rem; top:0; bottom:0; width:2px;
     background-image: linear-gradient(var(--accent-2) 55%, transparent 0);
@@ -129,84 +120,48 @@
   </svg>
 </section>
 
-<!-- ============ 2. LE SENTIER · FRISE PANORAMIQUE (geste UI signature) ============ -->
-<section id="le-sentier" class="relative bg-bg overflow-hidden" data-sentier>
-  <div class="h-[100svh] overflow-hidden flex flex-col">
-    <div class="relative z-20 mx-auto max-w-7xl w-full px-5 md:px-8 pt-24 md:pt-28">
-      <p class="eyebrow text-ink-2" data-reveal>Le trajet</p>
-      <h2 class="h2-ital text-[clamp(1.7rem,4.4vw,2.8rem)] mt-2 max-w-2xl" data-reveal>Du chemin de crête jusqu'à l'écume.</h2>
-    </div>
-    <!-- frise -->
-    <div class="relative flex-1 w-full overflow-hidden" data-sentier-viewport>
-      <div class="absolute inset-0 sentier-track" data-sentier-track style="width:2400px">
-        <svg width="2400" height="600" viewBox="0 0 2400 600" preserveAspectRatio="xMinYMax slice" class="h-full w-[2400px]" aria-label="Panorama du sentier : du maquis en hauteur jusqu'à la mer turquoise">
-          <defs>
-            <linearGradient id="descente" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#1E2B1E"/>
-              <stop offset="0.5" stop-color="#3D6B5E"/>
-              <stop offset="0.78" stop-color="#2E8C8C"/>
-              <stop offset="1" stop-color="#E0A23B"/>
-            </linearGradient>
-            <linearGradient id="sky" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#cdd6c2"/>
-              <stop offset="0.6" stop-color="#bfd9d4"/>
-              <stop offset="1" stop-color="#f3d99b"/>
-            </linearGradient>
-            <linearGradient id="seafill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#5FB9B9"/>
-              <stop offset="1" stop-color="#2E8C8C"/>
-            </linearGradient>
-          </defs>
-          <rect x="0" y="0" width="2400" height="600" fill="url(#sky)"/>
-          <!-- soleil bas à droite -->
-          <circle cx="2180" cy="250" r="64" fill="#E0A23B" opacity="0.85"/>
-          <circle cx="2180" cy="250" r="110" fill="#E0A23B" opacity="0.18"/>
-          <!-- plan lointain : collines maquis -->
-          <path d="M0 360 Q200 250 430 300 T880 270 Q1150 240 1420 300 T1980 320 L2400 300 L2400 600 L0 600 Z" fill="#3a4a36" opacity="0.55"/>
-          <!-- mer à droite -->
-          <path d="M1760 600 L1760 380 Q2000 360 2400 380 L2400 600 Z" fill="url(#seafill)" opacity="0.9"/>
-          <!-- vagues stylisées -->
-          <path d="M1800 430 q40 -14 80 0 t80 0 t80 0 t80 0 t80 0 t80 0" stroke="#EEF0E6" stroke-width="3" fill="none" opacity="0.6"/>
-          <path d="M1840 470 q40 -14 80 0 t80 0 t80 0 t80 0 t80 0" stroke="#EEF0E6" stroke-width="3" fill="none" opacity="0.45"/>
-          <!-- plan moyen : crête + plage -->
-          <path d="M0 440 Q260 360 540 400 Q820 440 1080 410 Q1320 384 1560 440 Q1660 462 1760 470 L1760 600 L0 600 Z" fill="#2c3a29"/>
-          <!-- sable de la Roya -->
-          <path d="M1560 440 Q1660 462 1760 470 Q1860 480 1980 478 L2400 470 L2400 540 Q2000 520 1760 530 Q1640 535 1560 520 Z" fill="#e3cf9a" opacity="0.9"/>
-          <!-- le chemin (pointillés) qui descend de gauche à droite -->
-          <path d="M60 470 Q400 410 760 440 Q1100 470 1420 450 Q1620 438 1790 478" stroke="url(#descente)" stroke-width="5" stroke-linecap="round" fill="none" stroke-dasharray="3 16"/>
-          <!-- silhouettes de chevaux côté maquis -->
-          <g fill="#1E2B1E" opacity="0.9">
-            <path d="M250 452 q6 -16 16 -16 l4 -10 q3 -7 8 -2 l2 9 q10 0 16 6 q8 2 12 8 l-3 8 l-5 -4 l-2 8 l-5 0 l1 -9 l-14 1 l1 9 l-6 0 l-1 -10 q-9 -2 -14 -6 z"/>
-            <path d="M520 458 q5 -14 14 -14 l4 -9 q3 -6 7 -2 l1 8 q9 0 14 6 q7 2 11 7 l-3 7 l-4 -3 l-2 7 l-5 0 l1 -8 l-12 1 l1 8 l-5 0 l-1 -9 q-8 -2 -12 -5 z"/>
-          </g>
-          <!-- silhouette cavalier qui entre dans l'eau -->
-          <g fill="#1E2B1E" opacity="0.92">
-            <path d="M1700 472 q5 -13 13 -13 l3 -14 q2 -6 7 -2 q3 -10 9 -3 l-1 6 l4 0 l-2 13 q9 0 14 6 q7 2 10 7 l-2 6 l-4 -3 l-2 7 l-5 0 l1 -8 l-11 1 l1 8 l-5 0 l-1 -8 q-8 -2 -11 -5 z"/>
-          </g>
-        </svg>
-      </div>
-      <!-- marqueur "vous êtes ici" fixe au centre -->
-      <div class="marker-fixed absolute left-1/2 -translate-x-1/2 z-30 flex flex-col items-center" style="bottom:18%">
-        <svg width="44" height="44" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-          <circle cx="24" cy="24" r="22" fill="#EEF0E6" stroke="#2E8C8C" stroke-width="2"/>
-          <g fill="#1E2B1E">
-            <path d="M16 30 q4 -10 11 -10 l3 -10 q2 -5 6 -1 q3 -8 8 -2 l-1 5 l3 0 l-2 9 q7 1 11 5 q6 2 9 6 l-2 5 l-3 -3 l-2 6 l-4 0 l1 -7 l-9 1 l1 7 l-4 0 l-1 -7 q-7 -2 -10 -4 z" transform="translate(-7,-1) scale(.78)"/>
-          </g>
-        </svg>
-        <span class="mt-2 chip !bg-ink/80 !text-white text-[.62rem] !px-2.5 !py-1 tracking-widest uppercase">Vous êtes ici</span>
-      </div>
-      <!-- légendes-jalons -->
-      <div class="absolute inset-0 z-20 pointer-events-none">
-        <span class="sentier-legend absolute top-10 left-6 md:left-12 eyebrow text-bg-soft on-photo" data-legend="0.1" style="opacity:0">Le maquis</span>
-        <span class="sentier-legend absolute top-10 left-6 md:left-12 eyebrow text-bg-soft on-photo" data-legend="0.45" style="opacity:0">Le chemin de crête</span>
-        <span class="sentier-legend absolute top-10 left-6 md:left-12 eyebrow text-white on-photo" data-legend="0.8" style="opacity:0">La plage de la Roya</span>
-        <span class="sentier-legend absolute top-10 left-6 md:left-12 eyebrow text-white on-photo" data-legend="1" style="opacity:0">La mer</span>
-      </div>
-      <!-- progression -->
-      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 w-40 h-1 rounded-full bg-ink/15 overflow-hidden">
-        <div class="h-full bg-accent rounded-full" data-sentier-bar style="width:0%"></div>
-      </div>
-    </div>
+<!-- ============ 2. LE TRAJET · 3 ÉTAPES (cartes photo) ============ -->
+<section id="le-sentier" class="relative bg-bg py-20 md:py-28">
+  <div class="mx-auto max-w-7xl w-full px-5 md:px-8">
+    <p class="eyebrow text-ink-2" data-reveal>Le trajet</p>
+    <h2 class="h2-ital text-[clamp(1.9rem,5vw,3.4rem)] mt-2 max-w-2xl" data-reveal>Du chemin de crête jusqu'à l'écume.</h2>
+    <p class="text-ink-2 text-[1.05rem] leading-relaxed mt-5 max-w-2xl" data-reveal>Une même balade, trois temps. On part du maquis parfumé, on descend par un petit chemin jusqu'à la plage de la Roya, puis on entre dans la mer avec les chevaux.</p>
+
+    <ol class="mt-12 grid gap-6 md:grid-cols-3">
+      <li class="group" data-reveal>
+        <figure class="relative overflow-hidden rounded-2xl aspect-[4/5] bg-ink/5">
+          <img src="./assets/images/cheval-brun-liberte.jpg" alt="Cheval dans le maquis corse au départ de la balade" class="absolute inset-0 w-full h-full object-cover photo-tone transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
+          <div class="scrim"></div>
+          <figcaption class="absolute left-5 bottom-5 right-5 z-[2]">
+            <span class="eyebrow on-photo text-[#FFE7B8]">Étape 1</span>
+            <p class="h2-ital on-photo text-white text-2xl mt-1">Le maquis</p>
+          </figcaption>
+        </figure>
+        <p class="text-ink-2 leading-relaxed mt-4">Départ à cheval dans les collines d'Oletta, entre maquis et vignes du Nebbio.</p>
+      </li>
+      <li class="group md:mt-10" data-reveal>
+        <figure class="relative overflow-hidden rounded-2xl aspect-[4/5] bg-ink/5">
+          <img src="./assets/images/plage-mediterranee.jpg" alt="La plage de la Roya, golfe de Saint-Florent" class="absolute inset-0 w-full h-full object-cover photo-tone transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
+          <div class="scrim"></div>
+          <figcaption class="absolute left-5 bottom-5 right-5 z-[2]">
+            <span class="eyebrow on-photo text-[#FFE7B8]">Étape 2</span>
+            <p class="h2-ital on-photo text-white text-2xl mt-1">La plage de la Roya</p>
+          </figcaption>
+        </figure>
+        <p class="text-ink-2 leading-relaxed mt-4">Le chemin de crête descend jusqu'au sable, face au golfe de Saint-Florent.</p>
+      </li>
+      <li class="group" data-reveal>
+        <figure class="relative overflow-hidden rounded-2xl aspect-[4/5] bg-ink/5">
+          <img src="./assets/images/cheval-bord-eau.jpg" alt="Cheval entrant dans la mer au bord de l'eau" class="absolute inset-0 w-full h-full object-cover photo-tone transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
+          <div class="scrim"></div>
+          <figcaption class="absolute left-5 bottom-5 right-5 z-[2]">
+            <span class="eyebrow on-photo text-[#FFE7B8]">Étape 3</span>
+            <p class="h2-ital on-photo text-white text-2xl mt-1">La baignade</p>
+          </figcaption>
+        </figure>
+        <p class="text-ink-2 leading-relaxed mt-4">On entre dans l'eau avec les chevaux, souvent au coucher du soleil. Le moment que tout le monde retient.</p>
+      </li>
+    </ol>
   </div>
 </section>
 
@@ -214,16 +169,8 @@
 <section id="la-baignade" class="relative overflow-hidden bg-ink" data-baignade style="min-height:115vh">
   <img src="./assets/images/balade-plage-coucher.jpg" alt="Cavaliers sur la plage de la Roya au coucher du soleil" class="absolute inset-0 w-full h-full object-cover photo-tone" loading="lazy" />
   <div class="scrim"></div>
-  <!-- overlay gold qui se réchauffe -->
-  <div class="absolute inset-0 z-[2] pointer-events-none" data-gold-overlay style="background:radial-gradient(120% 80% at 80% 90%, rgba(224,162,59,.55) 0%, rgba(224,162,59,.12) 45%, transparent 75%); opacity:.25"></div>
-  <!-- jauge de coucher de soleil -->
-  <div class="absolute inset-0 z-[3] pointer-events-none overflow-hidden" data-sun-area>
-    <svg class="sun-disc absolute" data-sun width="180" height="180" viewBox="0 0 180 180" style="left:8%; top:12%" aria-hidden="true">
-      <circle cx="90" cy="90" r="46" fill="#F0C268"/>
-      <circle cx="90" cy="90" r="78" fill="#E0A23B" opacity="0.22"/>
-      <circle cx="90" cy="90" r="62" fill="#F0C268" opacity="0.4"/>
-    </svg>
-  </div>
+  <!-- voile chaud statique de coucher de soleil (décoratif, pointer-events:none) -->
+  <div class="absolute inset-0 z-[2] pointer-events-none" style="background:radial-gradient(120% 80% at 80% 90%, rgba(224,162,59,.42) 0%, rgba(224,162,59,.1) 45%, transparent 75%)"></div>
   <div class="relative z-10 mx-auto max-w-7xl w-full px-5 md:px-8 min-h-[115vh] flex items-center py-28">
     <div class="max-w-2xl">
       <p class="eyebrow on-photo text-[#FFE7B8] mb-4" data-reveal>L'expérience signature</p>
@@ -509,31 +456,11 @@
 <script type="module">
   document.documentElement.classList.add('js-ready');
 
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Motion One pour inView uniquement. Aucune lib de smooth-scroll, aucun effet scrubbé sur la position de scroll : scroll 100% natif.
-  let inView;
-  try {
-    ({ inView } = await import('https://cdn.jsdelivr.net/npm/motion@10.18.0/+esm'));
-  } catch (e) { /* CSS autoreveal filet de sécurité prend le relais */ }
+  // Scroll 100% natif, aucune lib de smooth-scroll. Reveals gérés en CSS pur
+  // (.js-ready [data-reveal] + @keyframes autoreveal), robustes même sans JS. Pas de Motion One.
 
   // ---- Année footer ----
   document.querySelectorAll('[data-year]').forEach(el => el.textContent = new Date().getFullYear());
-
-  // ---- Reveals ----
-  // Gérés en CSS pur (.js-ready [data-reveal] + @keyframes autoreveal) : robuste même si Motion plante.
-
-  // ---- Petit tween one-shot (rAF, indépendant de la position de scroll) ----
-  function tween(duration, onUpdate){
-    const start = performance.now();
-    function frame(now){
-      const t = Math.min(1, (now - start) / duration);
-      const eased = t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2; // easeInOutQuad
-      onUpdate(eased);
-      if (t < 1) requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(frame);
-  }
 
   // ---- Header : fond au scroll (toggle de seuil, pas un effet scrubbé) ----
   const header = document.querySelector('[data-header]');
@@ -554,58 +481,6 @@
   onScrollHeader();
   window.addEventListener('scroll', onScrollHeader, { passive: true });
 
-  // ---- Frise sentier (geste UI signature) : panorama qui se déroule UNE fois à l'apparition ----
-  const sentier = document.querySelector('[data-sentier]');
-  const track = document.querySelector('[data-sentier-track]');
-  const viewport = document.querySelector('[data-sentier-viewport]');
-  const bar = document.querySelector('[data-sentier-bar]');
-  const legends = document.querySelectorAll('.sentier-legend');
-
-  function applySentier(progress){
-    const svgWidth = 2400;
-    const vw = viewport ? viewport.clientWidth : window.innerWidth;
-    const maxShift = Math.max(0, svgWidth - vw);
-    if (track) track.style.transform = `translateX(${-progress * maxShift}px)`;
-    if (bar) bar.style.width = (progress * 100) + '%';
-    let active = null;
-    legends.forEach(l => { if (progress >= parseFloat(l.dataset.legend) - 0.18) active = l; });
-    legends.forEach(l => { l.style.transition = 'opacity .4s ease'; l.style.opacity = (l === active) ? '1' : '0'; });
-  }
-
-  if (inView && sentier && track && !reduce) {
-    let played = false;
-    inView(sentier, () => {
-      if (played) return;
-      played = true;
-      tween(5200, applySentier); // déroulé du maquis à la mer, une seule fois
-      return () => {};
-    }, { amount: 0.35 });
-  } else {
-    // Fallback reduced-motion / sans Motion : panorama posé sur la mer, légende finale
-    applySentier(1);
-  }
-
-  // ---- Jauge de coucher de soleil (geste UI secondaire) : le soleil descend UNE fois à l'apparition ----
-  const baignade = document.querySelector('[data-baignade]');
-  const sun = document.querySelector('[data-sun]');
-  const goldOverlay = document.querySelector('[data-gold-overlay]');
-
-  function applySun(p){
-    if (sun){ sun.style.top = (12 + p * 52) + '%'; sun.style.left = (8 + p * 46) + '%'; }
-    if (goldOverlay) goldOverlay.style.opacity = (0.25 + p * 0.4).toFixed(3);
-  }
-
-  if (inView && baignade && sun && !reduce) {
-    let s = false;
-    inView(baignade, () => {
-      if (s) return;
-      s = true;
-      tween(2600, applySun);
-      return () => {};
-    }, { amount: 0.3 });
-  } else if (sun) {
-    applySun(1);
-  }
 </script>
 
 </body>
