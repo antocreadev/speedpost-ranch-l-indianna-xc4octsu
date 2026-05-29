@@ -42,6 +42,42 @@
   .float-call {
     box-shadow: 0 10px 30px rgba(46,140,140,.35);
   }
+  /* Header au scroll (toggle JS .header-solid) */
+  .header-solid {
+    background: rgba(238,240,230,.92);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    box-shadow: 0 1px 0 rgba(30,43,30,.08);
+  }
+  /* ---- Classes custom (definies inline pour survivre a la purge Tailwind) ---- */
+  /* Scrim permanent sur photos (ne s'efface pas apres animation) */
+  .scrim {
+    position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:
+      linear-gradient(180deg, rgba(15,18,12,.62) 0%, rgba(15,18,12,.18) 24%, transparent 46%, transparent 58%, rgba(15,18,12,.38) 84%, rgba(15,18,12,.74) 100%),
+      radial-gradient(62% 46% at 50% 52%, rgba(15,18,12,.42) 0%, transparent 70%);
+  }
+  /* Tonalite photo (jamais blur) */
+  .photo-tone { filter: brightness(.92) saturate(1.05) contrast(1.03); }
+  /* Texte pose sur photo : ombre permanente pour lisibilite */
+  .on-photo { text-shadow: 0 1px 2px rgba(0,0,0,.45), 0 2px 18px rgba(0,0,0,.35); }
+  /* Eyebrow : sur-titre majuscule espace */
+  .eyebrow {
+    font-family:'Jost',system-ui,sans-serif; font-weight:500;
+    font-size:.72rem; letter-spacing:.2em; text-transform:uppercase;
+  }
+  /* Chip : pastille info secondaire */
+  .chip {
+    display:inline-flex; align-items:center; gap:.4rem;
+    padding:.42rem .85rem; border-radius:9999px;
+    font-family:'Jost',system-ui,sans-serif; font-size:.8rem; font-weight:500;
+    background:rgba(30,43,30,.06); color:var(--ink);
+    border:1px solid rgba(30,43,30,.12);
+  }
+  .chip.on-photo {
+    background:rgba(15,18,12,.42); color:#fff;
+    -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+    border-color:rgba(255,255,255,.2); text-shadow:none;
+  }
 </style>
 </head>
 <body class="font-body antialiased text-ink bg-bg">
@@ -506,11 +542,11 @@
   function onScrollHeader(){
     const solid = window.scrollY > 60;
     if (solid) {
-      header.classList.add('bg-bg/92','backdrop-blur','shadow-[0_1px_0_rgba(30,43,30,.08)]');
+      header.classList.add('header-solid');
       logo.classList.remove('text-white'); logo.classList.add('text-ink');
       navLinks.forEach(a => { a.classList.remove('text-white'); a.classList.add('text-ink'); });
     } else {
-      header.classList.remove('bg-bg/92','backdrop-blur','shadow-[0_1px_0_rgba(30,43,30,.08)]');
+      header.classList.remove('header-solid');
       logo.classList.add('text-white'); logo.classList.remove('text-ink');
       navLinks.forEach(a => { a.classList.add('text-white'); a.classList.remove('text-ink'); });
     }
