@@ -15,6 +15,10 @@
 <link rel="stylesheet" href="./tailwind.css" />
 <style>
   html, body { overflow-x: hidden; }
+  /* Reveals robustes : opacity:0 seulement si JS prêt, animation CSS = filet de sécurité (révèle même si Motion plante) */
+  .js-ready [data-reveal]{opacity:0;transform:translateY(22px);animation:autoreveal .5s ease-out .15s forwards;}
+  @keyframes autoreveal{to{opacity:1;transform:translateY(0)}}
+  @media (prefers-reduced-motion: reduce){ .js-ready [data-reveal]{animation-duration:.01s;transform:none;} }
   .h1-disp { font-family:'Fraunces',serif; font-weight:300; font-style:italic; line-height:1.04; letter-spacing:-.015em; }
   .h2-disp { font-family:'Fraunces',serif; font-weight:500; line-height:1.08; }
   .h2-ital { font-family:'Fraunces',serif; font-weight:300; font-style:italic; line-height:1.08; letter-spacing:-.01em; }
@@ -470,9 +474,9 @@
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  let animate, inView, scroll, Lenis;
+  let scroll, Lenis;
   try {
-    ({ animate, inView, scroll } = await import('https://cdn.jsdelivr.net/npm/motion@10.18.0/+esm'));
+    ({ scroll } = await import('https://cdn.jsdelivr.net/npm/motion@10.18.0/+esm'));
   } catch (e) { /* CSS autoreveal filet de sécurité prend le relais */ }
   try {
     Lenis = (await import('https://cdn.jsdelivr.net/npm/lenis@1.1.13/+esm')).default;
@@ -490,13 +494,7 @@
   document.querySelectorAll('[data-year]').forEach(el => el.textContent = new Date().getFullYear());
 
   // ---- Reveals ----
-  if (inView) {
-    inView('[data-reveal]', (el) => {
-      animate(el, { opacity: [0, 1], transform: ['translateY(22px)', 'translateY(0px)'] },
-        { duration: 0.5, easing: [0.2, 0.7, 0.2, 1] });
-      return () => {};
-    }, { amount: 0.15 });
-  }
+  // Gérés en CSS pur (.js-ready [data-reveal] + @keyframes autoreveal) : robuste même si Motion plante.
 
   // ---- Header : fond au scroll ----
   const header = document.querySelector('[data-header]');
