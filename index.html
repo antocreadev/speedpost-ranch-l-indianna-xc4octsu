@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="./tailwind.css" />
 <style>
   html, body { overflow-x: hidden; }
+  html { scroll-behavior: smooth; } /* ancres uniquement, n'affecte pas la molette (scroll natif) */
   /* Reveals robustes : opacity:0 seulement si JS prêt, animation CSS = filet de sécurité (révèle même si Motion plante) */
   .js-ready [data-reveal]{opacity:0;transform:translateY(22px);animation:autoreveal .5s ease-out .15s forwards;}
   @keyframes autoreveal{to{opacity:1;transform:translateY(0)}}
@@ -27,7 +28,7 @@
   .marker-fixed { will-change: transform; }
   .sun-disc { will-change: transform; }
   body.no-scroll { overflow: hidden; }
-  /* Reduced motion fallbacks for scroll-driven gestures */
+  /* Reduced motion fallbacks pour les gestes (déclenchés one-shot à l'apparition, pas scrubbés) */
   @media (prefers-reduced-motion: reduce) {
     .sentier-track { transform: translateX(0) !important; }
     .sun-disc { transform: none !important; }
@@ -66,7 +67,7 @@
 
 <!-- ============ 1. HERO · DÉPART MAQUIS ============ -->
 <section id="depart-maquis" class="relative min-h-[100svh] flex items-end overflow-hidden bg-ink">
-  <img id="hero-image" src="./assets/images/chevaux-troupeau-dore.jpg" alt="Troupeau de chevaux dans la lumière dorée du maquis corse" class="absolute inset-0 w-full h-[112%] -top-[6%] object-cover photo-tone" fetchpriority="high" />
+  <img src="./assets/images/chevaux-troupeau-dore.jpg" alt="Troupeau de chevaux dans la lumière dorée du maquis corse" class="absolute inset-0 w-full h-full object-cover photo-tone" fetchpriority="high" />
   <div class="scrim"></div>
   <div class="relative z-10 w-full mx-auto max-w-7xl px-5 md:px-8 pb-16 md:pb-24 pt-28">
     <p class="eyebrow on-photo text-[#FFE7B8] mb-5" data-reveal>Centre équestre · Oletta, Nebbio · Haute-Corse</p>
@@ -93,8 +94,8 @@
 </section>
 
 <!-- ============ 2. LE SENTIER · FRISE PANORAMIQUE (geste UI signature) ============ -->
-<section id="le-sentier" class="relative bg-bg" data-sentier style="height:180vh">
-  <div class="sticky top-0 h-[100svh] overflow-hidden flex flex-col">
+<section id="le-sentier" class="relative bg-bg overflow-hidden" data-sentier>
+  <div class="h-[100svh] overflow-hidden flex flex-col">
     <div class="relative z-20 mx-auto max-w-7xl w-full px-5 md:px-8 pt-24 md:pt-28">
       <p class="eyebrow text-ink-2" data-reveal>Le trajet</p>
       <h2 class="h2-ital text-[clamp(1.7rem,4.4vw,2.8rem)] mt-2 max-w-2xl" data-reveal>Du chemin de crête jusqu'à l'écume.</h2>
@@ -474,21 +475,11 @@
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  let scroll, Lenis;
+  // Motion One pour inView uniquement. Aucune lib de smooth-scroll, aucun effet scrubbé sur la position de scroll : scroll 100% natif.
+  let inView;
   try {
-    ({ scroll } = await import('https://cdn.jsdelivr.net/npm/motion@10.18.0/+esm'));
+    ({ inView } = await import('https://cdn.jsdelivr.net/npm/motion@10.18.0/+esm'));
   } catch (e) { /* CSS autoreveal filet de sécurité prend le relais */ }
-  try {
-    Lenis = (await import('https://cdn.jsdelivr.net/npm/lenis@1.1.13/+esm')).default;
-  } catch (e) { /* scroll natif */ }
-
-  // ---- Smooth scroll (Lenis) ----
-  let lenis = null;
-  if (Lenis && !reduce) {
-    lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-    function raf(time){ lenis.raf(time); requestAnimationFrame(raf); }
-    requestAnimationFrame(raf);
-  }
 
   // ---- Année footer ----
   document.querySelectorAll('[data-year]').forEach(el => el.textContent = new Date().getFullYear());
@@ -496,7 +487,19 @@
   // ---- Reveals ----
   // Gérés en CSS pur (.js-ready [data-reveal] + @keyframes autoreveal) : robuste même si Motion plante.
 
-  // ---- Header : fond au scroll ----
+  // ---- Petit tween one-shot (rAF, indépendant de la position de scroll) ----
+  function tween(duration, onUpdate){
+    const start = performance.now();
+    function frame(now){
+      const t = Math.min(1, (now - start) / duration);
+      const eased = t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2; // easeInOutQuad
+      onUpdate(eased);
+      if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---- Header : fond au scroll (toggle de seuil, pas un effet scrubbé) ----
   const header = document.querySelector('[data-header]');
   const logo = document.querySelector('[data-header-logo]');
   const navLinks = document.querySelectorAll('[data-header-nav] a');
@@ -515,76 +518,57 @@
   onScrollHeader();
   window.addEventListener('scroll', onScrollHeader, { passive: true });
 
-  // ---- Hero parallax ----
-  const heroImg = document.getElementById('hero-image');
-  if (scroll && heroImg && !reduce) {
-    scroll(({ y }) => {
-      const p = Math.min(1, Math.max(0, y.progress));
-      heroImg.style.transform = `translateY(${p * 7}%)`;
-    }, { target: document.getElementById('depart-maquis'), offset: ['start start', 'end start'] });
-  }
-
-  // ---- Frise sentier (geste UI signature) ----
+  // ---- Frise sentier (geste UI signature) : panorama qui se déroule UNE fois à l'apparition ----
   const sentier = document.querySelector('[data-sentier]');
   const track = document.querySelector('[data-sentier-track]');
   const viewport = document.querySelector('[data-sentier-viewport]');
   const bar = document.querySelector('[data-sentier-bar]');
   const legends = document.querySelectorAll('.sentier-legend');
 
-  function updateLegends(progress){
+  function applySentier(progress){
+    const svgWidth = 2400;
+    const vw = viewport ? viewport.clientWidth : window.innerWidth;
+    const maxShift = Math.max(0, svgWidth - vw);
+    if (track) track.style.transform = `translateX(${-progress * maxShift}px)`;
+    if (bar) bar.style.width = (progress * 100) + '%';
     let active = null;
-    legends.forEach(l => {
-      const t = parseFloat(l.dataset.legend);
-      if (progress >= t - 0.18) active = l;
-    });
-    legends.forEach(l => { l.style.opacity = (l === active) ? '1' : '0'; l.style.transition = 'opacity .4s ease'; });
+    legends.forEach(l => { if (progress >= parseFloat(l.dataset.legend) - 0.18) active = l; });
+    legends.forEach(l => { l.style.transition = 'opacity .4s ease'; l.style.opacity = (l === active) ? '1' : '0'; });
   }
 
-  if (scroll && track && viewport && !reduce) {
-    scroll(({ y }) => {
-      const progress = Math.min(1, Math.max(0, y.progress));
-      const svgWidth = 2400;
-      const vw = viewport.clientWidth;
-      const maxShift = Math.max(0, svgWidth - vw);
-      track.style.transform = `translateX(${-progress * maxShift}px)`;
-      if (bar) bar.style.width = (progress * 100) + '%';
-      updateLegends(progress);
-    }, { target: sentier, offset: ['start start', 'end end'] });
+  if (inView && sentier && track && !reduce) {
+    let played = false;
+    inView(sentier, () => {
+      if (played) return;
+      played = true;
+      tween(5200, applySentier); // déroulé du maquis à la mer, une seule fois
+      return () => {};
+    }, { amount: 0.35 });
   } else {
-    // Fallback reduced-motion / no-JS-scroll : frise statique visible, légende mer
-    if (track) track.style.transform = 'translateX(-30%)';
-    if (legends.length) legends[legends.length - 1].style.opacity = '1';
-    if (bar) bar.style.width = '100%';
+    // Fallback reduced-motion / sans Motion : panorama posé sur la mer, légende finale
+    applySentier(1);
   }
 
-  // ---- Jauge de coucher de soleil (geste UI secondaire) ----
+  // ---- Jauge de coucher de soleil (geste UI secondaire) : le soleil descend UNE fois à l'apparition ----
   const baignade = document.querySelector('[data-baignade]');
   const sun = document.querySelector('[data-sun]');
   const goldOverlay = document.querySelector('[data-gold-overlay]');
-  if (scroll && sun && baignade && !reduce) {
-    scroll(({ y }) => {
-      const p = Math.min(1, Math.max(0, y.progress));
-      // le soleil descend de 12% à ~70% de hauteur, glisse vers la droite
-      sun.style.top = (12 + p * 56) + '%';
-      sun.style.left = (8 + p * 46) + '%';
-      if (goldOverlay) goldOverlay.style.opacity = (0.25 + p * 0.45).toFixed(3);
-    }, { target: baignade, offset: ['start end', 'end start'] });
-  } else if (sun) {
-    sun.style.top = '64%'; sun.style.left = '52%';
-    if (goldOverlay) goldOverlay.style.opacity = '0.6';
+
+  function applySun(p){
+    if (sun){ sun.style.top = (12 + p * 52) + '%'; sun.style.left = (8 + p * 46) + '%'; }
+    if (goldOverlay) goldOverlay.style.opacity = (0.25 + p * 0.4).toFixed(3);
   }
 
-  // ---- Ancres : laisser Lenis gérer si présent ----
-  if (lenis) {
-    document.querySelectorAll('a[href^="#"]').forEach(a => {
-      a.addEventListener('click', (e) => {
-        const id = a.getAttribute('href');
-        if (id.length > 1) {
-          const target = document.querySelector(id);
-          if (target) { e.preventDefault(); lenis.scrollTo(target, { offset: -70 }); }
-        }
-      });
-    });
+  if (inView && baignade && sun && !reduce) {
+    let s = false;
+    inView(baignade, () => {
+      if (s) return;
+      s = true;
+      tween(2600, applySun);
+      return () => {};
+    }, { amount: 0.3 });
+  } else if (sun) {
+    applySun(1);
   }
 </script>
 
